@@ -105,6 +105,9 @@ class Blender(core.View):
 
     # the ray-tracing engine is set here because it affects the availability of some features
     bpy.context.scene.render.engine = "CYCLES"
+    bpy.context.scene.view_settings.view_transform = "Filmic"
+    bpy.context.scene.view_settings.look = "None"
+
     self.use_gpu = os.getenv("KUBRIC_USE_GPU", "False").lower() in ("true", "1", "t")
 
     blender_utils.activate_render_passes(normal=True, optical_flow=True, segmentation=True, uv=True)
