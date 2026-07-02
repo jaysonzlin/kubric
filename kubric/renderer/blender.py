@@ -429,9 +429,14 @@ class Blender(core.View):
       with io.StringIO() as fstdout:  # < scratch stdout buffer
         with redirect_stdout(fstdout):  # < also suppresses python stdout
           if extension == "obj":
-            bpy.ops.wm.obj_import(filepath=obj.render_filename,
-                                     use_split_objects=False,
-                                     **obj.render_import_kwargs)
+            try:
+              bpy.ops.wm.obj_import(filepath=obj.render_filename,
+                                    use_split_objects=False,
+                                    **obj.render_import_kwargs)
+            except AttributeError:
+              bpy.ops.import_scene.obj(filepath=obj.render_filename,
+                                       use_split_objects=False,
+                                       **obj.render_import_kwargs)
           elif extension in ["glb", "gltf"]:
             bpy.ops.import_scene.gltf(filepath=obj.render_filename,
                                       **obj.render_import_kwargs)
@@ -626,6 +631,25 @@ class Blender(core.View):
     mat.use_nodes = True
     bsdf_node = mat.node_tree.nodes["Principled BSDF"]
 
+    # Blender 4.0 renamed several input fields of the Principled BSDF node
+    specular_key = "Specular IOR Level" if "Specular IOR Level" in bsdf_node.inputs else "Specular"
+    transmission_key = "Transmission Weight" if "Transmission Weight" in bsdf_node.inputs else "Transmission"
+    emission_key = "Emission Color" if "Emission Color" in bsdf_node.inputs else "Emission"
+
+    # In Blender < 4.0, "Specular Tint" is a float factor (type="VALUE"),
+    # whereas in Blender >= 4.0 it is a color (type="RGBA").
+    specular_tint_input = bsdf_node.inputs["Specular Tint"]
+    if specular_tint_input.type == "VALUE":
+      def tint_converter(c):
+        if hasattr(c, "rgb"):
+          return float(np.mean(c.rgb))
+        elif isinstance(c, (list, tuple, np.ndarray)):
+          return float(np.mean(c[:3]))
+        else:
+          return float(c)
+    else:
+      tint_converter = None
+
     obj.observe(AttributeSetter(bsdf_node.inputs["Base Color"], "default_value"), "color")
     obj.observe(KeyframeSetter(bsdf_node.inputs["Base Color"], "default_value"), "color",
                 type="keyframe")
@@ -635,21 +659,21 @@ class Blender(core.View):
     obj.observe(AttributeSetter(bsdf_node.inputs["Metallic"], "default_value"), "metallic")
     obj.observe(KeyframeSetter(bsdf_node.inputs["Metallic"], "default_value"), "metallic",
                 type="keyframe")
-    obj.observe(AttributeSetter(bsdf_node.inputs["Specular IOR Level"], "default_value"), "specular")
-    obj.observe(KeyframeSetter(bsdf_node.inputs["Specular IOR Level"], "default_value"), "specular",
+    obj.observe(AttributeSetter(bsdf_node.inputs[specular_key], "default_value"), "specular")
+    obj.observe(KeyframeSetter(bsdf_node.inputs[specular_key], "default_value"), "specular",
                 type="keyframe")
     obj.observe(AttributeSetter(bsdf_node.inputs["Specular Tint"],
-                                "default_value"), "specular_tint")
+                                "default_value", converter=tint_converter), "specular_tint")
     obj.observe(KeyframeSetter(bsdf_node.inputs["Specular Tint"], "default_value"), "specular_tint",
                 type="keyframe")
     obj.observe(AttributeSetter(bsdf_node.inputs["IOR"], "default_value"), "ior")
     obj.observe(KeyframeSetter(bsdf_node.inputs["IOR"], "default_value"), "ior",
                 type="keyframe")
-    obj.observe(AttributeSetter(bsdf_node.inputs["Transmission Weight"], "default_value"), "transmission")
-    obj.observe(KeyframeSetter(bsdf_node.inputs["Transmission Weight"], "default_value"), "transmission",
+    obj.observe(AttributeSetter(bsdf_node.inputs[transmission_key], "default_value"), "transmission")
+    obj.observe(KeyframeSetter(bsdf_node.inputs[transmission_key], "default_value"), "transmission",
                 type="keyframe")
-    obj.observe(AttributeSetter(bsdf_node.inputs["Emission Color"], "default_value"), "emission")
-    obj.observe(KeyframeSetter(bsdf_node.inputs["Emission Color"], "default_value"), "emission",
+    obj.observe(AttributeSetter(bsdf_node.inputs[emission_key], "default_value"), "emission")
+    obj.observe(KeyframeSetter(bsdf_node.inputs[emission_key], "default_value"), "emission",
                 type="keyframe")
     return mat
 

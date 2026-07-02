@@ -242,8 +242,9 @@ def next_global_count(name, reset=False):
   When passing reset=True, then all counts are reset.
   """
   if reset or not hasattr(next_global_count, "counter"):
+    import threading
     next_global_count.counter = collections.defaultdict(int)
-    next_global_count.lock = multiprocessing.Lock()
+    next_global_count.lock = threading.Lock()
 
   with next_global_count.lock:
     counter = next_global_count.counter[name]

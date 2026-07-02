@@ -31,6 +31,9 @@ MOVid-B
   --min_num_objects=3 --max_num_objects=10
 
 """
+import sys
+import pathlib
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[2]))
 
 import logging
 
@@ -105,7 +108,7 @@ scene.ambient_illumination = kb.Color(0.05, 0.05, 0.05)
 logging.info("Setting up the Camera...")
 scene.camera = kb.PerspectiveCamera(focal_length=35., sensor_width=32)
 if FLAGS.camera == "clevr":  # Specific position + jitter
-  scene.camera.position = [7.48113, -6.50764, 5.34367] + rng.rand(3)
+  scene.camera.position = [7.48113, -6.50764, 5.34367] #+ rng.rand(3)
 if FLAGS.camera == "random":  # Random position in half-sphere-shell
   scene.camera.position = kb.sample_point_in_half_sphere_shell(
       inner_radius=7., outer_radius=9., offset=0.1)

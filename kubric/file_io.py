@@ -217,19 +217,21 @@ def multi_write_image(data: np.ndarray, path_template: str, write_fn=write_png,
     max_write_threads: number of threads to use for writing images. (default = 16)
     **kwargs: additional kwargs to pass to the write_fn.
   """
+  import concurrent.futures
+
   num_threads = min(data.shape[0], max_write_threads)
-  with multiprocessing.pool.ThreadPool(num_threads) as pool:
-    args = [(img, path_template.format(i)) for i, img in enumerate(data)]
+  args = [(img, path_template.format(i)) for i, img in enumerate(data)]
 
-    def write_single_image_fn(arg):
-      write_fn(*arg, **kwargs)
+  def write_single_image_fn(arg):
+    write_fn(*arg, **kwargs)
 
-    for result in pool.imap_unordered(write_single_image_fn, args):
-      if isinstance(result,  Exception):
-        logger.warning("Exception while writing image %s", result)
-
-    pool.close()
-    pool.join()
+  with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+    futures = [executor.submit(write_single_image_fn, arg) for arg in args]
+    for future in concurrent.futures.as_completed(futures):
+      try:
+        future.result()
+      except Exception as e:
+        logger.warning("Exception while writing image %s", e)
 
 
 def write_rgb_batch(data, directory, file_template="rgb_{:05d}.png", max_write_threads=16):
