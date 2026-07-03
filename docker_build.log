@@ -1,0 +1,95 @@
+#0 building with "desktop-linux" instance using docker driver
+
+#1 [internal] load build definition from Blender.Dockerfile
+#1 transferring dockerfile: 5.16kB done
+#1 WARN: FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 13)
+#1 DONE 0.0s
+
+#2 [auth] nvidia/cuda:pull token for registry-1.docker.io
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/nvidia/cuda:12.9.0-devel-ubuntu20.04
+#3 DONE 0.5s
+
+#4 [internal] load metadata for docker.io/nvidia/cuda:12.9.0-runtime-ubuntu20.04
+#4 DONE 0.5s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 84B done
+#5 DONE 0.0s
+
+#6 [stage-1 1/7] FROM docker.io/nvidia/cuda:12.9.0-runtime-ubuntu20.04@sha256:65f3d39e82333e6410801260af8ff078017616fb830d1f82757469808b2a2889
+#6 resolve docker.io/nvidia/cuda:12.9.0-runtime-ubuntu20.04@sha256:65f3d39e82333e6410801260af8ff078017616fb830d1f82757469808b2a2889 done
+#6 DONE 0.0s
+
+#7 [stage-1 3/7] RUN ln -sf /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-bundle.crt
+#7 CACHED
+
+#8 [stage-1 4/7] RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 10 &&     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 10
+#8 CACHED
+
+#9 [stage-1 2/7] RUN apt-get update --yes --fix-missing &&     apt-get install --yes --quiet --no-install-recommends --reinstall       python3.9-dev       python3.9-distutils       build-essential       imagemagick       libopenexr-dev       curl       ca-certificates       git       libffi-dev       libssl-dev       libx11-dev       libxxf86vm-dev       libxcursor-dev       libxi-dev       libxrandr-dev       libxinerama-dev       libglew-dev       zlib1g-dev       libbz2-dev       libgdbm-dev       liblzma-dev       libncursesw5-dev       libreadline-dev       libsqlite3-dev       uuid-dev
+#9 CACHED
+
+#10 [stage-1 5/7] RUN curl https://bootstrap.pypa.io/pip/3.9/get-pip.py -o get-pip.py &&     python3.9 get-pip.py &&     rm get-pip.py
+#10 CACHED
+
+#11 [build  1/10] FROM docker.io/nvidia/cuda:12.9.0-devel-ubuntu20.04@sha256:cce86c2792841cce2cbb761d5c34e70edf49f7517c848d403da3710de1dbfdc8
+#11 resolve docker.io/nvidia/cuda:12.9.0-devel-ubuntu20.04@sha256:cce86c2792841cce2cbb761d5c34e70edf49f7517c848d403da3710de1dbfdc8 done
+#11 DONE 0.0s
+
+#12 [internal] load build context
+#12 transferring context: 2.79MB 0.9s done
+#12 DONE 0.9s
+
+#13 [build  4/10] RUN update-alternatives --install /usr/bin/python python /usr/bin/python3.9 10 &&     update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 10
+#13 CACHED
+
+#14 [build  6/10] COPY docker/lib/linux_centos7_x86_64 /blenderpy/lib/linux_centos7_x86_64
+#14 CACHED
+
+#15 [build  7/10] COPY ./docker/cycles_free_patch.txt /blenderpy/blender
+#15 CACHED
+
+#16 [build  3/10] RUN apt-get update --yes --fix-missing &&     apt-get install --yes --quiet --no-install-recommends       python3.9-dev       build-essential       ca-certificates       libopenexr-dev       cmake       git       libffi-dev       libssl-dev       libx11-dev       libxxf86vm-dev       libxcursor-dev       libxi-dev       libxrandr-dev       libxinerama-dev       libglew-dev       subversion
+#16 CACHED
+
+#17 [build  9/10] RUN sed -i 's/(${LLVM_VERSION} VERSION_LESS "4.0.0")/FALSE/g' /blenderpy/blender/build_files/cmake/platform/platform_unix.cmake &&     sed -i '1i #ifdef __CUDACC__\n#ifndef saturate\n#define saturate(x) __saturatef(x)\n#endif\n#endif' /blenderpy/blender/intern/cycles/util/util_math_float3.h &&     echo 'set(WITH_CYCLES_OSL OFF CACHE BOOL "" FORCE)' >> /blenderpy/blender/build_files/cmake/config/bpy_module.cmake &&     echo 'set(WITH_CYCLES_CUDA_BINARIES ON CACHE BOOL "" FORCE)' >> /blenderpy/blender/build_files/cmake/config/bpy_module.cmake &&     echo 'set(CYCLES_CUDA_BINARIES_ARCH "sm_70;sm_75;sm_80;sm_86;compute_80" CACHE STRING "" FORCE)' >> /blenderpy/blender/build_files/cmake/config/bpy_module.cmake
+#17 CACHED
+
+#18 [build  2/10] WORKDIR /blenderpy
+#18 CACHED
+
+#19 [build  5/10] RUN git clone https://github.com/blender/blender.git --branch blender-v2.93-release --depth 1 &&     cd blender && git submodule update --init --recursive
+#19 CACHED
+
+#20 [build  8/10] RUN cd blender && patch -p1 < /blenderpy/blender/cycles_free_patch.txt
+#20 CACHED
+
+#21 [build 10/10] RUN cd blender && make -j4 bpy
+#21 CACHED
+
+#22 [stage-1 6/7] COPY --from=build /blenderpy/build_linux_bpy/bin/bpy.so /usr/local/lib/python3.9/dist-packages/
+#22 DONE 0.2s
+
+#23 [stage-1 7/7] COPY --from=build /blenderpy/lib/linux_centos7_x86_64/python/lib/python3.9/site-packages/2.93 /usr/local/lib/python3.9/dist-packages/2.93
+#23 DONE 0.2s
+
+#24 exporting to image
+#24 exporting layers
+#24 exporting layers 14.1s done
+#24 exporting manifest sha256:b33db9706cf9be892cdd2da8d36fb917fc5a470ecf2697a01c11dcb629ef35c5 done
+#24 exporting config sha256:fdf5ed2ae4c1c94255776f9afccf0846e8ec306c0ffac18f43044a57b5e1d00a done
+#24 exporting attestation manifest sha256:8c7d3b007a672e421481eabbde50e8e73f46820cf301f6438d3243fbf8685765 done
+#24 exporting manifest list sha256:b6fd8aed558e3225bc635c91a2101c8ee132b13e96e68abd2a38ee640f8f9c48 done
+#24 naming to docker.io/jaysonzlin/kubric-blender-gpu:latest done
+#24 DONE 14.2s
+
+ [33m5 warnings found (use docker --debug to expand):
+[0m - LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 17)
+ - LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 80)
+ - LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 81)
+ - FromAsCasing: 'as' and 'FROM' keywords' casing do not match (line 13)
+ - LegacyKeyValueFormat: "ENV key=value" should be used instead of legacy "ENV key value" format (line 16)
+
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/623cpsa3v79bem9dwpl779sbg

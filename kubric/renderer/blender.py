@@ -202,10 +202,18 @@ class Blender(core.View):
   def use_gpu(self, value: bool):
     self.blender_scene.cycles.device = "GPU" if value else "CPU"
     if value:
-      # call get_devices() to let Blender detect GPU devices
-      bpy.context.preferences.addons["cycles"].preferences.get_devices()
-      devices_used = [d.name for d in bpy.context.preferences.addons["cycles"].preferences.devices
-                      if d.use]
+      cycles_pref = bpy.context.preferences.addons["cycles"].preferences
+      # Enable the correct GPU backend depending on hardware (CUDA/OptiX for NVIDIA, Metal for macOS, etc.)
+      for device_type in ["CUDA", "OPTIX", "METAL", "HIP", "ONEAPI"]:
+        try:
+          cycles_pref.compute_device_type = device_type
+          cycles_pref.get_devices()
+          for d in cycles_pref.devices:
+            d.use = True
+          break
+        except TypeError:
+          pass
+      devices_used = [d.name for d in cycles_pref.devices if d.use]
       logger.info("Using the following GPU Device(s): %s", devices_used)
 
   def set_exr_output_path(self, path_prefix: Optional[PathLike]):

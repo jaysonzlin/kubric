@@ -1,0 +1,5 @@
+.git
+.svn
+**/.svn
+scratch/
+docker_build.log

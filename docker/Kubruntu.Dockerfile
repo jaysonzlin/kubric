@@ -7,7 +7,7 @@
 #   kubricdockerhub/kubruntu:latest \
 #   python3 examples/helloworld.py
 
-FROM kubricdockerhub/blender:latest
+FROM jaysonzlin/kubric-blender-gpu:latest
 
 WORKDIR /kubric
 

@@ -17,3 +17,4 @@ examples/KuBasic/Cone/*
 Dockerfile
 output_tmp/*
 2_sample_1/*
+docker/lib/*
