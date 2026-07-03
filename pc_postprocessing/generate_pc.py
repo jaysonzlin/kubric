@@ -62,8 +62,21 @@ def compute_barycentric_coordinates(pts, tri_verts):
     return np.stack([u, v, w], axis=-1)
 
 def main():
+    import argparse
+    # Parse arguments after '--'
+    args = sys.argv
+    if "--" in args:
+        args = args[args.index("--") + 1:]
+    else:
+        args = []
+        
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--sample_dir", type=str, default="output", help="Path to sample directory")
+    parsed_args = parser.parse_known_args(args)[0]
+    sample_dir = parsed_args.sample_dir
+
     # Load metadata.json
-    metadata_path = "output/metadata.json"
+    metadata_path = os.path.join(sample_dir, "metadata.json")
     if not os.path.exists(metadata_path):
         print(f"Error: {metadata_path} not found.")
         sys.exit(1)
@@ -188,7 +201,7 @@ def main():
             pc_data[f_idx, o_idx, :, :] = pts_t
             
     # Save the output to HDF5
-    output_filepath = "output/pc.hdf5"
+    output_filepath = os.path.join(sample_dir, "pc.hdf5")
     with h5py.File(output_filepath, "w") as f:
         f.create_dataset("point_cloud", data=pc_data)
         
