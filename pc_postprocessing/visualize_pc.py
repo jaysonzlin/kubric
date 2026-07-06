@@ -30,12 +30,18 @@ def main():
     max_coords = flat_pc.max(axis=0)
     
     mid_coords = (min_coords + max_coords) / 2
-    max_range = np.max(max_coords - min_coords)
-    radius = max_range / 2 + 0.5
+    # To keep z minimum at 0 and have equal range L for all axes, L must cover:
+    # 1. x range: max_coords[0] - min_coords[0]
+    # 2. y range: max_coords[1] - min_coords[1]
+    # 3. z range from 0 to max_coords[2]
+    max_range = max(max_coords[0] - min_coords[0], 
+                    max_coords[1] - min_coords[1], 
+                    max_coords[2])
+    L = max_range + 1.0 # span of each axis
     
-    x_lim = (mid_coords[0] - radius, mid_coords[0] + radius)
-    y_lim = (mid_coords[1] - radius, mid_coords[1] + radius)
-    z_lim = (mid_coords[2] - radius, mid_coords[2] + radius)
+    x_lim = (mid_coords[0] - L / 2, mid_coords[0] + L / 2)
+    y_lim = (mid_coords[1] - L / 2, mid_coords[1] + L / 2)
+    z_lim = (0.0, L)
 
     # Set up matplotlib figure
     fig = plt.figure(figsize=(10, 10))
