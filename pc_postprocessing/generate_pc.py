@@ -90,6 +90,14 @@ def main():
     frame_end = flags["frame_end"]
     num_frames = frame_end - frame_start + 1
     num_objects = len(instances)
+    initial_linear_velocity = np.asarray(
+        [instance["velocities"][0] for instance in instances],
+        dtype=np.float32,
+    )
+    initial_angular_velocity = np.asarray(
+        [instance["angular_velocities"][0] for instance in instances],
+        dtype=np.float32,
+    )
     
     print(f"Processing scene with {num_objects} objects over {num_frames} frames ({frame_start} to {frame_end})")
     
@@ -204,6 +212,8 @@ def main():
     output_filepath = os.path.join(sample_dir, "pc.hdf5")
     with h5py.File(output_filepath, "w") as f:
         f.create_dataset("point_cloud", data=pc_data)
+        f.create_dataset("initial_linear_velocity", data=initial_linear_velocity)
+        f.create_dataset("initial_angular_velocity", data=initial_angular_velocity)
         
     print(f"Successfully generated point cloud trajectory dataset of shape {pc_data.shape} and saved to {output_filepath}")
 
