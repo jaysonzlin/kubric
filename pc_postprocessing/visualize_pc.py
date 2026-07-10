@@ -5,6 +5,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import imageio
 
+
+def compute_point_colors(pc_data):
+    initial_heights = pc_data[0, :, :, 2]
+    min_heights = initial_heights.min(axis=1, keepdims=True)
+    height_ranges = np.ptp(initial_heights, axis=1, keepdims=True)
+    normalized_heights = np.full(initial_heights.shape, 0.5, dtype=np.float64)
+    np.divide(
+        initial_heights - min_heights,
+        height_ranges,
+        out=normalized_heights,
+        where=height_ranges > 0,
+    )
+    return plt.get_cmap("viridis")(normalized_heights)
+
+
 def main():
     import argparse
     parser = argparse.ArgumentParser()
@@ -53,8 +68,14 @@ def main():
     # We use imageio's mp4 writer (which downloads ffmpeg automatically if not present)
     writer = imageio.get_writer(output_video_path, fps=12)
 
-    # Define color scheme for objects (first is yellow, second is blue, etc. to match Blender/CLEVR alignment)
-    colors = ['#FFD700', '#1E90FF', '#3CB371', '#FF6347', '#9370DB', '#FF69B4']
+    point_colors = compute_point_colors(pc_data)
+    colorbar_mappable = plt.cm.ScalarMappable(
+        norm=plt.Normalize(vmin=0.0, vmax=1.0),
+        cmap="viridis",
+    )
+    colorbar_mappable.set_array([])
+    colorbar = fig.colorbar(colorbar_mappable, ax=ax, pad=0.1, shrink=0.7)
+    colorbar.set_label("Relative initial height")
 
     for f_idx in range(num_frames):
         ax.clear()
@@ -76,7 +97,7 @@ def main():
         for o_idx in range(num_objects):
             pts = pc_data[f_idx, o_idx, :, :]
             ax.scatter(pts[:, 0], pts[:, 1], pts[:, 2], 
-                       c=colors[o_idx % len(colors)], 
+                       c=point_colors[o_idx],
                        s=4, 
                        alpha=0.8,
                        edgecolors='none',
