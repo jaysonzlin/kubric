@@ -2,7 +2,7 @@
 
 ## Goal
 
-Replace the solid per-object point-cloud color with a stable, per-point colormap that makes surface geometry easier to read. Render the result only for `output/sample_0` so it can be evaluated before processing other samples.
+Replace the solid per-object point-cloud color with a stable, per-point colormap that makes surface geometry easier to read. Render the result only for `datasets/2_sample_1` so it can be evaluated before processing other samples.
 
 ## Color Mapping
 
@@ -16,9 +16,9 @@ Independent per-object normalization prioritizes visible geometry over absolute 
 
 ## Output and Scope
 
-The visualizer will accept an output filename so the preview can be written to `output/sample_0/pc_trajectory_colormap.mp4`. The existing `pc_trajectory.mp4` remains untouched. No PNG preview will be generated.
+The visualizer will accept an output filename so the preview can be written to `datasets/2_sample_1/pc_trajectory_colormap.mp4`. The existing `pc_trajectory.mp4` remains untouched. No PNG preview will be generated.
 
-Only the visualization step will run; the existing `output/sample_0/pc.hdf5` will be reused. No other sample will be generated or rendered.
+Only the visualization step will run; the existing `datasets/2_sample_1/pc.hdf5` will be reused. No other sample will be generated or rendered.
 
 ## Code Structure
 
@@ -27,6 +27,6 @@ Color calculation will live in a small helper separate from the rendering loop. 
 ## Verification
 
 - Unit-test color normalization for ordinary and constant-height point clouds.
-- Run the visualizer against `output/sample_0` with the preview output filename.
+- Run the visualizer against `datasets/2_sample_1` with the preview output filename.
 - Confirm that the output video exists, is non-empty, has the expected frame count, and leaves the original video unchanged.
 - Inspect representative rendered frames extracted from the video for stable, non-uniform `viridis` coloring and a readable colorbar. These inspection frames are temporary verification artifacts, not deliverables.
